@@ -11,7 +11,7 @@
   $start = $start [1] + $start [0];
  */
 
-//edit truc tiep tren git
+//chan qua di mat, khong hieu thang git
 session_start();
 error_reporting(E_ALL );
 error_reporting(0);
