@@ -11,7 +11,7 @@
   $start = $start [1] + $start [0];
  */
 
-//sao khong commit duoc
+//fuck
 session_start();
 error_reporting(E_ALL );
 error_reporting(0);
