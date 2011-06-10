@@ -6,12 +6,12 @@
  */
 
 /*
-  $start = microtime ();test
+  $start = microtime ();
   $start = explode ( " ", $start );
   $start = $start [1] + $start [0];
  */
 
-
+//edit truc tiep tren git
 session_start();
 error_reporting(E_ALL );
 error_reporting(0);
