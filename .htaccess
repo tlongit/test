@@ -1,0 +1,19 @@
+Options +FollowSymLinks
+RewriteEngine on
+
+RewriteOptions Inherit
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule  (.*)                     index.php?url=$1        [L,QSA]
+
+# Don't allow browsing of directories
+Options -Indexes
+
+# PHP settings
+#php_flag magic_quotes_gpc off
+#php_flag magic_quotes_runtime off
+#php_flag register_globals off
+#php_flag register_long_arrays off
+#php_value max_execution_time "30"
+#php_value post_max_size "40M"
+php_value upload_max_filesize "39M"

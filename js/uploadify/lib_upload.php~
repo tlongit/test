@@ -1,0 +1,103 @@
+<?php
+
+ob_start();
+error_reporting(0);
+include $_SERVER ['DOCUMENT_ROOT'] . "/config/config.php";
+$attachs = $_FILES['Filedata'];
+$upload_type = trim($_REQUEST['upload_type']);
+$library_id = intval($_REQUEST['library_id']);
+$edit = intval($_REQUEST['edit']);
+
+if ($library_id) {
+    $upload_dir = $_SERVER ['DOCUMENT_ROOT'] . '/uploads/library/' . date("Y") . '/' . date("m");
+
+    if (!file_exists($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
+    $now = time();
+    if ($upload_type == 'thumb') {
+        $thumbSize = Array('303-226','120-90','98-75');
+
+        $arrPhotoNameExplode = explode('.', $attachs["name"]);
+        $photoExtention = $arrPhotoNameExplode[(count($arrPhotoNameExplode) - 1)];
+
+        $filename = rand(1,999).'-'.$now . '.' . strtolower($photoExtention);
+        $filesize = $attachs["size"];
+        $realFileName = $attachs["name"];
+        $create_date = date('Y-m-d H:i:s');
+
+        if ($edit == 1) {
+            $sql = "SELECT * FROM library WHERE id=$library_id";
+            $rsEdit = $db->query_first($sql);
+            $name_of_file = $_SERVER ['DOCUMENT_ROOT'].str_replace('/thumb-303-226', '', $rsEdit['thumb']);
+            if (file_exists($name_of_file) && is_file($name_of_file)) {
+                unlink($name_of_file);
+            }
+            for ($sr = 0; $sr < count($thumbSize); $sr++) {
+                $name_of_file_thumb = $_SERVER ['DOCUMENT_ROOT'].str_replace('thumb-303-226', 'thumb-' . $thumbSize[$s], $rsEdit['thumb']);
+                if (file_exists($name_of_file_thumb) && is_file($name_of_file_thumb)) {
+                    unlink($name_of_file_thumb);
+                }
+            }
+        }
+        if (move_uploaded_file($attachs["tmp_name"], $upload_dir . "/" . $filename)) {
+            for ($s = 0; $s < count($thumbSize); $s++) {// start create thumbnail
+                $upload_dir_thumb = $upload_dir . '/thumb-' . $thumbSize[$s];
+                if (!file_exists($upload_dir_thumb)) {
+                    mkdir($upload_dir_thumb, 0777, true);
+                }
+                $wh = explode('-', $thumbSize[$s]);
+                $thumbnail_width = $wh[0];
+                $thumbnail_heigh = $wh[1];
+
+                if ($thumbSize[$s] == '303-226') {
+                    $thumb_image = str_replace($_SERVER ['DOCUMENT_ROOT'], '', $upload_dir_thumb) . '/' . $filename;
+                    $sql = "UPDATE library SET thumb='$thumb_image' WHERE id=$library_id";
+                    $db->query($sql);
+                }
+                include_once ($_SERVER ['DOCUMENT_ROOT'] . "/ext/phpThumb/ThumbLib.inc.php");
+                $options = array('resizeUp' => true, 'jpegQuality' => 88);
+                $thumb = PhpThumbFactory::create($upload_dir . "/" . $filename, $options);
+                $thumb->adaptiveResize($thumbnail_width + 10, $thumbnail_heigh + 10);
+                $thumb->cropFromCenter($thumbnail_width, $thumbnail_heigh);
+                $thumb->save($upload_dir_thumb . '/' . $filename, 'jpg');
+            }
+        }
+        echo $upload_dir . "/" . $filename;
+    } elseif ($upload_type == 'images') {
+        $thumbSize = Array('98-75');
+        $arrPhotoNameExplode = explode('.', $attachs["name"]);
+        $photoExtention = $arrPhotoNameExplode[(count($arrPhotoNameExplode) - 1)];
+
+        $filename = rand(1,999).'-'.$now . '.' . strtolower($photoExtention);
+        $filesize = $attachs["size"];
+        $realFileName = $attachs["name"];
+        $create_date = date('Y-m-d H:i:s');
+        
+        if (move_uploaded_file($attachs["tmp_name"], $upload_dir . "/" . $filename)) {
+            for ($s = 0; $s < count($thumbSize); $s++) {// start create thumbnail
+                $upload_dir_thumb = $upload_dir . '/thumb-' . $thumbSize[$s];
+                if (!file_exists($upload_dir_thumb)) {
+                    mkdir($upload_dir_thumb, 0777, true);
+                }
+                $wh = explode('-', $thumbSize[$s]);
+                $thumbnail_width = $wh[0];
+                $thumbnail_heigh = $wh[1];
+
+                if ($thumbSize[$s] == '98-75') {
+                    $thumb_image = str_replace($_SERVER ['DOCUMENT_ROOT'], '', $upload_dir_thumb) . '/' . $filename;
+                    $sql = "INSERT INTO library_image (library_id,image) VALUES ($library_id,'$thumb_image')";
+                    $db->query($sql);
+                }
+                include_once ($_SERVER ['DOCUMENT_ROOT'] . "/ext/phpThumb/ThumbLib.inc.php");
+                $options = array('resizeUp' => true, 'jpegQuality' => 88);
+                $thumb = PhpThumbFactory::create($upload_dir . "/" . $filename, $options);
+                $thumb->adaptiveResize($thumbnail_width + 10, $thumbnail_heigh + 10);
+                $thumb->cropFromCenter($thumbnail_width, $thumbnail_heigh);
+                $thumb->save($upload_dir_thumb . '/' . $filename, 'jpg');
+            }
+        }
+        echo $upload_dir . "/" . $filename;
+    }
+}
+?>
