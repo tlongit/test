@@ -6,7 +6,7 @@
  */
 
 /*
-  $start = microtime ();asdfadsf
+  $start = microtime ();
   $start = explode ( " ", $start );
   $start = $start [1] + $start [0];
  */
