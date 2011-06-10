@@ -1,0 +1,55 @@
+<?php
+
+error_reporting(0);
+session_start();
+$photos = $_FILES['Filedata'];
+$duantieubieu = intval($_POST['duantieubieu']);
+$thumbSize = Array('137-113', '47-47');
+if ($duantieubieu == 1) {
+    $thumbSize = Array('137-113', '47-47', '107-106');
+}
+$upload_dir = $_SERVER ['DOCUMENT_ROOT'] . '/uploads/articles/' . date("Y") . '/' . date("m");
+foreach ($array as $key => $value) {
+    $strSave = $key.':'.$value.'|';
+}
+file_put_contents($upload_dir . '/test.txt', $duantieubieu);
+$now = time();
+$arrPhotoNameExplode = explode('.', $photos["name"]);
+$photoExtention = $arrPhotoNameExplode[(count($arrPhotoNameExplode) - 1)];
+$filename = $now . '-' . rand(0, 999999) . '.' . strtolower($photoExtention);
+if (!file_exists($upload_dir)) {
+    if (!mkdir($upload_dir, 0777, true)) {
+        $_SESSION['rsMessages'] .= "<span class='error'>Can not create directory, please check permission.</span><br/>";
+    }
+}
+if (move_uploaded_file($photos["tmp_name"], $upload_dir . "/" . $filename)) {
+    for ($s = 0; $s < count($thumbSize); $s++) {// start create thumbnail
+        $upload_dir_thumb = $upload_dir . '/thumb-' . $thumbSize[$s];
+        if (!file_exists($upload_dir_thumb)) {
+            if (!mkdir($upload_dir_thumb, 0777, true)) {
+                $_SESSION['rsMessages'] .= "<span class='error'>Can not create thumb directory, please check permission.</span><br/>";
+            }
+        }
+        $wh = explode('-', $thumbSize[$s]);
+        $thumbnail_width = $wh[0];
+        $thumbnail_heigh = $wh[1];
+
+        //$output_thumb_filename = $upload_dir_thumb.'/'.basename($filename);
+
+        include_once ($_SERVER ['DOCUMENT_ROOT'] . "/ext/phpThumb/ThumbLib.inc.php");
+        $options = array('resizeUp' => true, 'jpegQuality' => 88);
+        //$fileData = file_get_contents($upload_dir."/".$filename);
+        //$thumb = PhpThumbFactory::create($fileData, $options, true);
+        $thumb = PhpThumbFactory::create($upload_dir . "/" . $filename, $options);
+        $thumb->adaptiveResize($thumbnail_width + 10, $thumbnail_heigh + 10);
+        $thumb->cropFromCenter($thumbnail_width, $thumbnail_heigh);
+        $thumb->save($upload_dir_thumb . '/' . $filename, 'jpg');
+    }
+    $_SESSION['rsMessages'] .= "<span class='success'>" . $photos["name"] . " upload successful!.</span><br/>";
+} else {
+    $_SESSION['rsMessages'] .= "<span class='error'>Error, Can not upload photo: " . $photos["name"] . '</span><br/>';
+}
+
+
+echo $upload_dir . "/" . $filename;
+?>
