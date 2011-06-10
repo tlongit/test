@@ -11,6 +11,8 @@
   $start = $start [1] + $start [0];
  */
 
+//test push from local, that la cu chuoi qua di
+
 session_start();
 error_reporting(E_ALL );
 error_reporting(0);
